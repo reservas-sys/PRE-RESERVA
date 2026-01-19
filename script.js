@@ -2,12 +2,12 @@
    CONFIGURACIÓN PRINCIPAL - VIVANTURA
    ========================================== */
 
-const ACCESS_PASSWORD = 'HOLA'; // Contraseña de acceso (Cámbiala si ellos quieren otra)
+const ACCESS_PASSWORD = 'HOLA'; // Contraseña de acceso
 
 document.addEventListener('DOMContentLoaded', () => {
     
     // --------------------------------------------------------
-    // 1. CONFIGURACIÓN DE CORREO (EMAILJS) - LISTO ✅
+    // 1. CONFIGURACIÓN DE CORREO (EMAILJS) - VIVANTURA
     // --------------------------------------------------------
     const EMAILJS_SERVICE_ID = 'service_1q1q1l9';
     const EMAILJS_PUBLIC_KEY = 'Bwz_ooLl9-P5SjDQA';
@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     emailjs.init(EMAILJS_PUBLIC_KEY);
 
     // --------------------------------------------------------
-    // 2. CONFIGURACIÓN DE FIREBASE - LISTO ✅
+    // 2. CONFIGURACIÓN DE FIREBASE - VIVANTURA
     // --------------------------------------------------------
     const firebaseConfig = {
       apiKey: "AIzaSyAoeLCPECJEtzO1sJcYzKgrI7nzeelVUG8",
@@ -30,7 +30,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Inicialización de Firebase
     try {
-        // Evitamos reinicializar si ya existe
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
         }
@@ -38,12 +37,11 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error("Error inicializando Firebase:", e); 
     }
     
-    // Inicialización del Storage
     let storage;
     try {
         storage = firebase.storage();
     } catch (e) {
-        console.error("Error: Firebase Storage no está disponible. Revisa si habilitaste 'Storage' en la consola.");
+        console.error("Error: Firebase Storage no está disponible.");
     }
 
     // --------------------------------------------------------
@@ -147,7 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('confirm-valor-restante').textContent = valorFormateado;
         document.getElementById('confirm-plan-incluye').innerHTML = planDescription;
         
-        // --- WHATSAPP ACTUALIZADO (3137449530) ---
+        // --- WHATSAPP NUEVO ---
         const wppNumber = '3137449530';
         const msgVuelos = encodeURIComponent(`Hola, estoy interesado en cotizar tiquetes aéreos para mi reserva a ${data.destino}. Titular: ${data.nombre}`);
         const msgTours = encodeURIComponent(`Hola, me gustaría información sobre tours y actividades para mi reserva en ${data.hotel}. Titular: ${data.nombre}`);
@@ -161,8 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Generar PDF y Enviar
     async function processVoucher() {
         if (!storage) {
-            alert("⚠️ Error: El servicio de almacenamiento (Firebase Storage) no está activo. Revisa la consola para más detalles.");
-            // Permitimos descargar el PDF localmente aunque falle Firebase
+            alert("⚠️ Error: El servicio de almacenamiento (Firebase Storage) no está activo. El PDF se descargará pero no se enviará por correo.");
         }
         
         toggleLoader(true, "Generando PDF...");
@@ -192,7 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const nombreCliente = document.getElementById('nombre-completo').value;
             const localFileName = `Comprobante_${nombreCliente.replace(/ /g, '_')}.pdf`;
             
-            // 1. Guardar PDF Localmente
+            // 1. Guardar PDF Localmente (Siempre funciona)
             pdf.save(localFileName);
             
             // 2. Subir a Firebase y Enviar Correo (Solo si storage está activo)
@@ -225,9 +222,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error("Error en el proceso:", error);
-            // Mensajes de error amigables
             if(error.code === 'storage/unauthorized') {
-                alert("Error de Permisos en Firebase:\n\nDebes ir a la consola de Firebase -> Storage -> Rules y cambiar 'allow read, write: if request.auth != null;' por 'allow read, write: if true;'");
+                alert("Error de Permisos en Firebase:\n\nVe a Firebase Console -> Storage -> Rules y cambia las reglas a 'allow read, write: if true;'");
             } else {
                 alert("Hubo un error inesperado. Revisa la consola (F12) para ver el detalle.");
             }
