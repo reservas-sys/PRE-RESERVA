@@ -2,12 +2,12 @@
    CONFIGURACIÓN PRINCIPAL - VIVANTURA
    ========================================== */
 
-const ACCESS_PASSWORD = 'HOLA'; // Contraseña de acceso
+const ACCESS_PASSWORD = 'HOLA'; // Contraseña de acceso (Cámbiala si ellos quieren otra)
 
 document.addEventListener('DOMContentLoaded', () => {
     
     // --------------------------------------------------------
-    // 1. CONFIGURACIÓN DE CORREO (EMAILJS) - ¡LISTO! ✅
+    // 1. CONFIGURACIÓN DE CORREO (EMAILJS) - LISTO ✅
     // --------------------------------------------------------
     const EMAILJS_SERVICE_ID = 'service_1q1q1l9';
     const EMAILJS_PUBLIC_KEY = 'Bwz_ooLl9-P5SjDQA';
@@ -16,37 +16,38 @@ document.addEventListener('DOMContentLoaded', () => {
     emailjs.init(EMAILJS_PUBLIC_KEY);
 
     // --------------------------------------------------------
-    // 2. CONFIGURACIÓN DE FIREBASE (PENDIENTE DE TARJETA ⚠️)
+    // 2. CONFIGURACIÓN DE FIREBASE - LISTO ✅
     // --------------------------------------------------------
-    // Necesitas crear el proyecto en Firebase Console cuando Google acepte tu tarjeta.
-    // Luego reemplaza estos datos con los que te den allí.
     const firebaseConfig = {
-      apiKey: "PEGAR_AQUI_API_KEY_FIREBASE",
-      authDomain: "TU_PROYECTO.firebaseapp.com",
-      projectId: "TU_PROJECT_ID",
-      storageBucket: "TU_BUCKET.firebasestorage.app",
-      messagingSenderId: "NUMERO_SENDER_ID",
-      appId: "TU_APP_ID"
+      apiKey: "AIzaSyAoeLCPECJEtzO1sJcYzKgrI7nzeelVUG8",
+      authDomain: "viventura-6a646.firebaseapp.com",
+      projectId: "viventura-6a646",
+      storageBucket: "viventura-6a646.firebasestorage.app",
+      messagingSenderId: "935783599165",
+      appId: "1:935783599165:web:e1b5530720de8d5b5dee54",
+      measurementId: "G-9PSH2V92YK"
     };
 
-    // Inicialización segura (No tocar esto)
-    if (firebaseConfig.apiKey !== "PEGAR_AQUI_API_KEY_FIREBASE") {
-        try {
+    // Inicialización de Firebase
+    try {
+        // Evitamos reinicializar si ya existe
+        if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
-        } catch(e) { console.error("Error init Firebase", e); }
-    } else {
-        console.warn("⚠️ FALTA CONFIGURAR FIREBASE: El PDF no se guardará en la nube hasta que pongas las claves reales.");
+        }
+    } catch(e) { 
+        console.error("Error inicializando Firebase:", e); 
     }
     
+    // Inicialización del Storage
     let storage;
     try {
-        if(firebase.apps.length > 0) storage = firebase.storage();
+        storage = firebase.storage();
     } catch (e) {
-        console.error("Firebase Storage no disponible");
+        console.error("Error: Firebase Storage no está disponible. Revisa si habilitaste 'Storage' en la consola.");
     }
 
     // --------------------------------------------------------
-    // 3. LÓGICA DEL SISTEMA (NO TOCAR)
+    // 3. LÓGICA DEL SISTEMA
     // --------------------------------------------------------
     const loginOverlay = document.getElementById('login-overlay');
     const loginForm = document.getElementById('login-form');
@@ -146,7 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('confirm-valor-restante').textContent = valorFormateado;
         document.getElementById('confirm-plan-incluye').innerHTML = planDescription;
         
-        // WHATSAPP NUEVO
+        // --- WHATSAPP ACTUALIZADO (3137449530) ---
         const wppNumber = '3137449530';
         const msgVuelos = encodeURIComponent(`Hola, estoy interesado en cotizar tiquetes aéreos para mi reserva a ${data.destino}. Titular: ${data.nombre}`);
         const msgTours = encodeURIComponent(`Hola, me gustaría información sobre tours y actividades para mi reserva en ${data.hotel}. Titular: ${data.nombre}`);
@@ -160,7 +161,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Generar PDF y Enviar
     async function processVoucher() {
         if (!storage) {
-            alert("⚠️ Error de Configuración:\nFaltan las claves de Firebase en el archivo script.js.\n\nEl PDF se generará localmente pero no se enviará por correo hasta que configures Firebase.");
+            alert("⚠️ Error: El servicio de almacenamiento (Firebase Storage) no está activo. Revisa la consola para más detalles.");
+            // Permitimos descargar el PDF localmente aunque falle Firebase
         }
         
         toggleLoader(true, "Generando PDF...");
@@ -189,33 +191,46 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const nombreCliente = document.getElementById('nombre-completo').value;
             const localFileName = `Comprobante_${nombreCliente.replace(/ /g, '_')}.pdf`;
-            pdf.save(localFileName); // Descarga local siempre funciona
             
-            // Si hay Firebase, subimos y enviamos correo
+            // 1. Guardar PDF Localmente
+            pdf.save(localFileName);
+            
+            // 2. Subir a Firebase y Enviar Correo (Solo si storage está activo)
             if (storage) {
                 const pdfBlob = pdf.output('blob');
                 const firebaseFileName = `comprobantes/Comprobante_${nombreCliente.replace(/ /g, '_')}_${Date.now()}.pdf`;
-                toggleLoader(true, "Subiendo archivo...");
+                
+                toggleLoader(true, "Subiendo archivo a la nube...");
                 const storageRef = storage.ref(firebaseFileName);
+                
+                // Subida
                 const uploadTask = await storageRef.put(pdfBlob);
                 const downloadURL = await uploadTask.ref.getDownloadURL();
                 
-                toggleLoader(true, "Enviando correo...");
+                toggleLoader(true, "Enviando correo al cliente...");
+                
+                // Envío de correo con EmailJS
                 const templateParams = {
                     nombre_cliente: nombreCliente,
                     nombre_hotel: document.getElementById('hotel').value,
                     to_email: document.getElementById('email').value,
                     download_link: downloadURL
                 };
+                
                 await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
-                alert("¡ÉXITO!\n\nEl comprobante ha sido enviado al correo y descargado.");
+                alert("¡ÉXITO TOTAL!\n\n1. PDF descargado en tu equipo.\n2. PDF guardado en la nube.\n3. Correo enviado al cliente.");
             } else {
-                 alert("¡PDF DESCARGADO!\n\nNota: No se envió el correo porque falta configurar Firebase.");
+                alert("¡PDF DESCARGADO!\n\nNota: No se pudo enviar por correo porque Firebase Storage no respondió.");
             }
 
         } catch (error) {
             console.error("Error en el proceso:", error);
-            alert("Hubo un error. Revisa la consola (F12).");
+            // Mensajes de error amigables
+            if(error.code === 'storage/unauthorized') {
+                alert("Error de Permisos en Firebase:\n\nDebes ir a la consola de Firebase -> Storage -> Rules y cambiar 'allow read, write: if request.auth != null;' por 'allow read, write: if true;'");
+            } else {
+                alert("Hubo un error inesperado. Revisa la consola (F12) para ver el detalle.");
+            }
         } finally {
             toggleLoader(false);
             processBtn.disabled = false;
@@ -250,7 +265,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('fecha-viaje').min = new Date().toISOString().split("T")[0];
 });
 
-// Función de Mapas (Fuera del DOMContentLoaded)
+// Función de Mapas (Global)
 function initAutocomplete() {
     const destinoInput = document.getElementById('destino');
     const hotelInput = document.getElementById('hotel');
