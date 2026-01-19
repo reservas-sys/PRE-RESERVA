@@ -1,8 +1,8 @@
 /* ==========================================
-   CONFIGURACIÓN PRINCIPAL - VIVANTURA
+   CONFIGURACIÓN FINAL - VIVANTURA (FIREBASE ANTIGUO)
    ========================================== */
 
-const ACCESS_PASSWORD = 'HOLA'; // Contraseña de acceso
+const ACCESS_PASSWORD = 'HOLA'; 
 
 document.addEventListener('DOMContentLoaded', () => {
     
@@ -16,16 +16,16 @@ document.addEventListener('DOMContentLoaded', () => {
     emailjs.init(EMAILJS_PUBLIC_KEY);
 
     // --------------------------------------------------------
-    // 2. CONFIGURACIÓN DE FIREBASE - VIVANTURA
+    // 2. CONFIGURACIÓN DE FIREBASE (TU PROYECTO ANTIGUO)
     // --------------------------------------------------------
     const firebaseConfig = {
-      apiKey: "AIzaSyAoeLCPECJEtzO1sJcYzKgrI7nzeelVUG8",
-      authDomain: "viventura-6a646.firebaseapp.com",
-      projectId: "viventura-6a646",
-      storageBucket: "viventura-6a646.firebasestorage.app",
-      messagingSenderId: "935783599165",
-      appId: "1:935783599165:web:e1b5530720de8d5b5dee54",
-      measurementId: "G-9PSH2V92YK"
+      apiKey: "AIzaSyBeoG3uxq3f8wzQgEp0AkhnoWTlTVFLjJs",
+      authDomain: "links-61279.firebaseapp.com",
+      projectId: "links-61279",
+      storageBucket: "links-61279.firebasestorage.app",
+      messagingSenderId: "960181376002",
+      appId: "1:960181376002:web:a4ff47407fabbe82b1c31b",
+      measurementId: "G-PBJ2908N59"
     };
 
     // Inicialización de Firebase
@@ -51,13 +51,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('login-form');
     const passwordInput = document.getElementById('password-input');
     const loginError = document.getElementById('login-error');
-    const mainWrapper = document.querySelector('.wrapper');
     const form = document.getElementById('pre-reserva-form');
     const formTitleSection = document.getElementById('form-title-section');
     const formSection = document.getElementById('form-section');
     const confirmationSection = document.getElementById('confirmation-section');
     const processBtn = document.getElementById('process-voucher-btn');
     const newVoucherBtn = document.getElementById('new-voucher-btn');
+    const mainWrapper = document.querySelector('.wrapper');
 
     // Login
     loginForm.addEventListener('submit', (e) => {
@@ -159,7 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Generar PDF y Enviar
     async function processVoucher() {
         if (!storage) {
-            alert("⚠️ Error: El servicio de almacenamiento (Firebase Storage) no está activo. El PDF se descargará pero no se enviará por correo.");
+            alert("⚠️ Error: Firebase no conectó correctamente. Revisa la consola.");
         }
         
         toggleLoader(true, "Generando PDF...");
@@ -189,10 +189,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const nombreCliente = document.getElementById('nombre-completo').value;
             const localFileName = `Comprobante_${nombreCliente.replace(/ /g, '_')}.pdf`;
             
-            // 1. Guardar PDF Localmente (Siempre funciona)
+            // 1. Guardar PDF Localmente
             pdf.save(localFileName);
             
-            // 2. Subir a Firebase y Enviar Correo (Solo si storage está activo)
+            // 2. Subir a Firebase y Enviar Correo
             if (storage) {
                 const pdfBlob = pdf.output('blob');
                 const firebaseFileName = `comprobantes/Comprobante_${nombreCliente.replace(/ /g, '_')}_${Date.now()}.pdf`;
@@ -215,18 +215,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 };
                 
                 await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
-                alert("¡ÉXITO TOTAL!\n\n1. PDF descargado en tu equipo.\n2. PDF guardado en la nube.\n3. Correo enviado al cliente.");
+                alert("¡ÉXITO TOTAL!\n\n1. PDF descargado.\n2. Archivo guardado en la nube.\n3. Correo enviado.");
             } else {
-                alert("¡PDF DESCARGADO!\n\nNota: No se pudo enviar por correo porque Firebase Storage no respondió.");
+                alert("¡PDF DESCARGADO!\n\nNota: No se envió el correo porque Firebase no respondió.");
             }
 
         } catch (error) {
             console.error("Error en el proceso:", error);
-            if(error.code === 'storage/unauthorized') {
-                alert("Error de Permisos en Firebase:\n\nVe a Firebase Console -> Storage -> Rules y cambia las reglas a 'allow read, write: if true;'");
-            } else {
-                alert("Hubo un error inesperado. Revisa la consola (F12) para ver el detalle.");
-            }
+            alert("Hubo un error. Revisa la consola (F12) para más detalles.");
         } finally {
             toggleLoader(false);
             processBtn.disabled = false;
