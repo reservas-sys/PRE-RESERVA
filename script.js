@@ -146,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('confirm-plan-incluye').innerHTML = planDescription;
         
         // --- WHATSAPP NUEVO ---
-        const wppNumber = '3137449530';
+        const wppNumber = '3014305051';
         const msgVuelos = encodeURIComponent(`Hola, estoy interesado en cotizar tiquetes aéreos para mi reserva a ${data.destino}. Titular: ${data.nombre}`);
         const msgTours = encodeURIComponent(`Hola, me gustaría información sobre tours y actividades para mi reserva en ${data.hotel}. Titular: ${data.nombre}`);
         const msgTraslados = encodeURIComponent(`Hola, necesito cotizar los traslados privados para mi reserva en ${data.hotel}. Titular: ${data.nombre}`);
